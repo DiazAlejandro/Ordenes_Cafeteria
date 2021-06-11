@@ -6,10 +6,14 @@
 package vista;
 
 import accesoDato.TipoIngredienteJpaController;
+import accesoDato.IngredienteJpaController;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import modelo.Ingrediente;
 import modelo.TipoIngrediente;
 
 /**
@@ -18,14 +22,16 @@ import modelo.TipoIngrediente;
  */
 public class IngredienteFrom extends javax.swing.JDialog {
 
-    /**
-     * Creates new form IngredienteFrom
-     */
-    private TipoIngrediente ting;
-    private EntityManagerFactory emf; 
-    private TipoIngredienteJpaController cti;
-    private List <TipoIngrediente> datoTipoIngrediente;
-
+    
+    
+    private EntityManagerFactory         emf; 
+    private TipoIngredienteJpaController cti;          //Controlador del TipoIngrediente
+    private List <TipoIngrediente>       datoTipoIngrediente;//Lista que almacena los registros de Tipo Ingrediente
+    private TipoIngrediente              tipoIng;
+    
+    private Ingrediente              ingrediente; //Instancia para crear los ingrdientes
+    private IngredienteJpaController ctlIng;      //Controlador de Ingrediente
+    
     public IngredienteFrom(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -33,6 +39,10 @@ public class IngredienteFrom extends javax.swing.JDialog {
         cti = new TipoIngredienteJpaController(emf);
         datoTipoIngrediente = cti.findTipoIngredienteEntities();
         llenarComboBox(datoTipoIngrediente);
+        
+        /**Guardar Ingrediente*/
+        ctlIng = new IngredienteJpaController(emf);
+        
     }
     
     /**
@@ -47,8 +57,21 @@ public class IngredienteFrom extends javax.swing.JDialog {
         while (it.hasNext()){     //Ciclo para recorrer el Iterator
             tipoIng = it.next();  //Le pasa a la instnaica de Tipo ingrediente el objeto que haya recorrigo
             System.out.println(tipoIng.getNombre());  //Imprime el nombre del tipo del ingrediente
+            System.out.println(tipoIng.getIdting());
             comboBoxTipoI.addItem(tipoIng.getNombre());
         }
+    }
+    
+    public int obtenerId(List tipoIngrediente, String nombre){
+        Iterator<TipoIngrediente> it = tipoIngrediente.iterator(); //Interface Iterator para recorrer la lista
+        TipoIngrediente tipoIng;  //Variable del tipo TipoIngrediente
+        while (it.hasNext()){     //Ciclo para recorrer el Iterator
+            tipoIng = it.next();  //Le pasa a la instnaica de Tipo ingrediente el objeto que haya recorrigo
+            if (tipoIng.getNombre().equals(nombre)){
+                return tipoIng.getIdting();
+            }
+        }
+        return 0;
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -65,6 +88,7 @@ public class IngredienteFrom extends javax.swing.JDialog {
         txtIdIngrediente = new javax.swing.JTextField();
         txtNombre = new javax.swing.JTextField();
         comboBoxTipoI = new javax.swing.JComboBox<>();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -92,26 +116,38 @@ public class IngredienteFrom extends javax.swing.JDialog {
             }
         });
 
+        jButton1.setText("REGISTRAR INGREDIENTE");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(48, 48, 48)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comboBoxTipoI, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(48, 48, 48)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(comboBoxTipoI, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel2))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtIdIngrediente, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtIdIngrediente, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(147, Short.MAX_VALUE))
+                        .addGap(70, 70, 70)
+                        .addComponent(jButton1)))
+                .addContainerGap(388, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -128,7 +164,9 @@ public class IngredienteFrom extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(comboBoxTipoI, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(165, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(jButton1)
+                .addContainerGap(122, Short.MAX_VALUE))
         );
 
         pack();
@@ -145,6 +183,24 @@ public class IngredienteFrom extends javax.swing.JDialog {
     private void comboBoxTipoIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxTipoIActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_comboBoxTipoIActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        String nombre = comboBoxTipoI.getSelectedItem().toString();
+        TipoIngrediente ting = new TipoIngrediente();
+        ting.setIdting(obtenerId(datoTipoIngrediente, nombre));
+        
+        ingrediente = new Ingrediente();
+        ingrediente.setIding(Integer.parseInt(txtIdIngrediente.getText()));
+        ingrediente.setNombre(txtNombre.getText());
+        ingrediente.setTipoing(ting);
+        
+        try {
+            ctlIng.create(ingrediente);
+        } catch (Exception ex) {
+            Logger.getLogger(IngredienteFrom.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -190,6 +246,7 @@ public class IngredienteFrom extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> comboBoxTipoI;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
